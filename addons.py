@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # takes in the order of the equation, and then the arguments, C0, C1, C2... Cn , such as the equation is
 # in the form : C0 + C1 X + C2 X^2 + .... + Cn X^n
 # write the jitter in percent
-def generate_fuzzy_data(coef_list: list, x_boundary, jitter=0):
+def generate_fuzzy_data(coef_list: list, x_boundary: list, jitter=0, show_coeficients=False):
     data = []
     abscisse = []
     order = len(coef_list)
@@ -15,14 +15,15 @@ def generate_fuzzy_data(coef_list: list, x_boundary, jitter=0):
 
     number_of_points = 100
 
-    if coef_list:
-        print("Using coeficients:")
-        for coef in coef_list:
-            print(f"{coef}")
+    if show_coeficients:
+        if coef_list:
+            print("Using coeficients:")
+            for coef in coef_list:
+                print(f"{coef}")
 
-    else:
-        print("using random coeficients")
-        coef_list = [random.uniform(-1, 1) for _i in range(order)]
+        else:
+            print("using random coeficients")
+            coef_list = [random.uniform(-1, 1) for _i in range(order)]
 
     order_list = list(range(order))
 

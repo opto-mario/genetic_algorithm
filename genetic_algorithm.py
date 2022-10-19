@@ -2,10 +2,12 @@ import numpy as np
 import random
 import addons
 import matplotlib.pyplot as plt
+from rich.progress import track
+import time
+import statistics
 
 
 class PolynomialGeneticAlgorithm:
-
     def __init__(self, fitting_order):
         self.data_x = []
         self.data_y = []
@@ -22,6 +24,7 @@ class PolynomialGeneticAlgorithm:
         for individual in range(number_of_individual):
             for coefficient in range(self.order):
                 self.population[individual][coefficient] = random.uniform(-10, 10)
+        self.fitness = list(np.zeros(number_of_individual, dtype=float))
 
     def get_fitness(self):
         self.fitness = []
@@ -47,7 +50,7 @@ class PolynomialGeneticAlgorithm:
             max_fitness = max(self.fitness)
             max_fitness_index = np.where(self.fitness == max_fitness)[0][0]
             selected[i] = self.population[max_fitness_index]
-            self.fitness[int(max_fitness_index)] = -9999999
+            self.fitness[int(max_fitness_index)] = 0.0
         return selected
 
     def crossover(self, parents, random_crossover=False):
@@ -86,35 +89,66 @@ if __name__ == '__main__':
     # Create the dataset, along a polynomial function of 5th order, with the coefficients [5, 3, 0.5, -0.03, -0.3]
     #  To make things more interesting, I add some random noise in the dataset.
 
-    polynomial_coefs = [5, 3, 0.5, -0.03, -0.3]    # -> Equivalent to 5 + 3x + 0.5x^2 - 0.03x^3 - 0.3x^4
-    visualisation_boundary = [-3, 3]
+    # polynomial_coefs = [5, 3, 0.5, -0.03, -0.3]    # -> Equivalent to 5 + 3x + 0.5x^2 - 0.03x^3 - 0.3x^4
+    polynomial_coefs = [-2.2, 6.4, 1.3, -0.5, 0.2]
+    data_boundary_x = [-4, 5]
 
-    data_test_abs, data_test = addons.generate_fuzzy_data(polynomial_coefs, visualisation_boundary, jitter=1)
+    data_test_abs, data_test = addons.generate_fuzzy_data(polynomial_coefs, data_boundary_x, jitter=0)
 
     gen.load_data(data_x=data_test_abs, data_y=data_test)
 
-    # Create a population comprising of 20 individuals
-    gen.create_population(20)
-    offsprings = []
+    # Create a population consisting of 20 individuals
+    gen.create_population(32)
 
+    offsprings = []
     fitness_result = []
+    fitness_timing = []
+    select_mating_timing = []
+    offspring_timing = []
+    mutation_timing = []
+    average_fitness_result = []
+
 
     # Loop for 1500 times. This needs to be adjusted until the result converges.
-    for index in range(1500):
+    for _ in track(range(3000), description="Iterating"):
+        start = time.perf_counter()
         gen.get_fitness()
-        fitness_result.append(max(gen.fitness))
-        mates = gen.select_mating(10)
-        offsprings = gen.crossover(mates, random_crossover=True)
-        test = gen.mutation(offsprings, mutation_range=20, mutation_rate=0.5)
-        gen.population = np.vstack([mates, test])
+        fitness_timing.append(time.perf_counter()-start)
 
-    plt.plot(fitness_result)
+        fitness_result.append(max(gen.fitness))
+        average_fitness_result.append(statistics.mean(gen.fitness))
+
+        start = time.perf_counter()
+        mates = gen.select_mating(16)
+        select_mating_timing.append(time.perf_counter()-start)
+
+        start = time.perf_counter()
+        offsprings = gen.crossover(mates, random_crossover=True)
+        offspring_timing.append(time.perf_counter()-start)
+
+        start = time.perf_counter()
+        mutants = gen.mutation(offsprings, mutation_range=2, mutation_rate=0.7)
+        mutation_timing.append(time.perf_counter()-start)
+
+        gen.population = np.vstack([mates, mutants])
+
+    print(f"average fitness step : {statistics.mean(fitness_timing)}")
+    print(f"average mating step : {statistics.mean(select_mating_timing)}")
+    print(f"average offspring step : {statistics.mean(offspring_timing)}")
+    print(f"average mutation step : {statistics.mean(mutation_timing)}")
+
+    plt.plot(fitness_result, color='red')
+    plt.plot(average_fitness_result, color='blue')
     plt.show()
 
     plt.scatter(gen.data_x, gen.data_y, marker="+")
-    fitted_data_x, fitted_data_y = addons.generate_fuzzy_data([offsprings[0][0], offsprings[0][1], offsprings[0][2],
-                                                               offsprings[0][3], offsprings[0][4]],
-                                                              visualisation_boundary)
 
-    plt.plot(fitted_data_x, fitted_data_y, color="red")
+    # find the best result in the population
+    gen.get_fitness()
+    winner = gen.population[gen.fitness.index(max(gen.fitness))]
+
+    fitting_data_x, fitting_data_y = addons.generate_fuzzy_data([winner[0], winner[1], winner[2], winner[3], winner[4]],
+                                                                data_boundary_x)
+
+    plt.plot(fitting_data_x, fitting_data_y, color="red")
     plt.show()
