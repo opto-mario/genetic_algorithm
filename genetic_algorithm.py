@@ -13,7 +13,6 @@ class PolynomialGeneticAlgorithm:
         self.population = []
         self.fitness = []
 
-
     def load_data(self, data_x, data_y):
         self.data_x = data_x
         self.data_y = data_y
@@ -65,6 +64,7 @@ class PolynomialGeneticAlgorithm:
                 offspring[index+1] = couple[1][:crossover_point] + couple[0][crossover_point:]
                 index += 2
             else:
+                # There are no mate for this individual, so it is skipped.
                 offspring[index] = couple[0]
                 index += 1
 
@@ -83,22 +83,38 @@ class PolynomialGeneticAlgorithm:
 if __name__ == '__main__':
     gen = PolynomialGeneticAlgorithm(5)
 
-    data_test_abs, data_test = addons.generate_fuzzy_data(5, -10, 3, 5, 5, 3, 0.5, -0.03, -0.3)
+    # Create the dataset, along a polynomial function of 5th order, with the coefficients [5, 3, 0.5, -0.03, -0.3]
+    #  To make things more interesting, I add some random noise in the dataset.
+
+    polynomial_coefs = [5, 3, 0.5, -0.03, -0.3]    # -> Equivalent to 5 + 3x + 0.5x^2 - 0.03x^3 - 0.3x^4
+    visualisation_boundary = [-3, 3]
+
+    data_test_abs, data_test = addons.generate_fuzzy_data(polynomial_coefs, visualisation_boundary, jitter=1)
 
     gen.load_data(data_x=data_test_abs, data_y=data_test)
+
+    # Create a population comprising of 20 individuals
     gen.create_population(20)
     offsprings = []
 
-    for index in range(150):
+    fitness_result = []
+
+    # Loop for 1500 times. This needs to be adjusted until the result converges.
+    for index in range(1500):
         gen.get_fitness()
+        fitness_result.append(max(gen.fitness))
         mates = gen.select_mating(10)
         offsprings = gen.crossover(mates, random_crossover=True)
-        test = gen.mutation(offsprings, mutation_range=10, mutation_rate=0.5)
+        test = gen.mutation(offsprings, mutation_range=20, mutation_rate=0.5)
         gen.population = np.vstack([mates, test])
 
-    plt.plot(gen.data_x, gen.data_y)
-    fitted_data_x, fitted_data_y = addons.generate_fuzzy_data(5, -10, 3, 0, offsprings[0][0], offsprings[0][1],
-                                                              offsprings[0][2], offsprings[0][3], offsprings[0][4])
+    plt.plot(fitness_result)
+    plt.show()
+
+    plt.scatter(gen.data_x, gen.data_y, marker="+")
+    fitted_data_x, fitted_data_y = addons.generate_fuzzy_data([offsprings[0][0], offsprings[0][1], offsprings[0][2],
+                                                               offsprings[0][3], offsprings[0][4]],
+                                                              visualisation_boundary)
 
     plt.plot(fitted_data_x, fitted_data_y, color="red")
     plt.show()

@@ -1,27 +1,28 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+
 
 # takes in the order of the equation, and then the arguments, C0, C1, C2... Cn , such as the equation is
 # in the form : C0 + C1 X + C2 X^2 + .... + Cn X^n
 # write the jitter in percent
-def generate_fuzzy_data(order, start, stop, jitter=0,  *args):
+def generate_fuzzy_data(coef_list: list, x_boundary, jitter=0):
     data = []
-    coef = []
     abscisse = []
+    order = len(coef_list)
+    start = x_boundary[0]
+    stop = x_boundary[1]
 
     number_of_points = 100
 
-    if args:
-        if len(args) == order:
-            for i in range(len(args)):
-                coef.append(args[i])
-        else:
-            print("number of coefficients should be equal to the order of the equation + 1")
-            print("For instance: for fitting second order equation, you need to have 3 coefficients")
+    if coef_list:
+        print("Using coeficients:")
+        for coef in coef_list:
+            print(f"{coef}")
+
     else:
-        coef = [random.uniform(-1, 1) for _i in range(order)]
+        print("using random coeficients")
+        coef_list = [random.uniform(-1, 1) for _i in range(order)]
 
     order_list = list(range(order))
 
@@ -29,7 +30,7 @@ def generate_fuzzy_data(order, start, stop, jitter=0,  *args):
         data.append(0)
         abscisse.append(start+x*(stop-start)/(number_of_points-1))
         for index in range(order):
-            data[x] += coef[index] * pow(abscisse[x], order_list[index])
+            data[x] += coef_list[index] * pow(abscisse[x], order_list[index])
 
     span = (np.max(data) - np.min(data))
 
@@ -43,7 +44,7 @@ def generate_fuzzy_data(order, start, stop, jitter=0,  *args):
 # write the boundaries parameters in the form of (start,stop)
 # write the jitter in percent
 # arguments are the coeficients, in the form of (C0, C1, ..., Cn) and (D0, D1, ..., Dm)
-def generate_fuzzy_data_2D(order:tuple, boundaries_x:tuple, boundaries_y:tuple, jitter=0,  *args):
+def generate_fuzzy_data_2d(order: tuple, boundaries_x: tuple, boundaries_y: tuple,  *args):
     size_x = 33
     size_y = 33
     data_g = [[] for _ in range(size_x)]
@@ -86,7 +87,7 @@ def generate_fuzzy_data_2D(order:tuple, boundaries_x:tuple, boundaries_y:tuple, 
                 data_h[x][y] += coef_h[index] * pow(abscisse_y[y], order_h_list[index])
             data[x].append(data_g[x][y] * data_h[x][y])
 
-    span = (np.max(data) - np.min(data))
+    # span = (np.max(data) - np.min(data))
 
     return abscisse_x, abscisse_y, data
 
@@ -99,12 +100,12 @@ def polynomial_grid(data_g, abscisse_x, coef_g, order_g_list):
                 data_g[x][y] += coef_g[index] * pow(abscisse_x[x], order_g_list[index])
     return data_g
 
+
 def polynomial_test(coord, coef, order):
     data = 0
     for index in order:
         data += coef[index] * pow(coord, order[index])
     return data
-
 
 
 # Assuming that the equation can be written in the form f(x,y)=g(x)*h(y), with g(x) a polynomial fonction
@@ -114,16 +115,16 @@ def polynomial_test(coord, coef, order):
 # write the boundaries parameters in the form of (start,stop)
 # write the jitter in percent
 # arguments are the coeficients, in the form of (C0, C1, ..., Cn) and (D0, D1, ..., Dm)
-def generate_fuzzy_data_2D_functional(order:tuple, boundaries_x:tuple, boundaries_y:tuple, jitter=0,  *args):
+def generate_fuzzy_data_2d_functional(order: tuple, boundaries_x: tuple, boundaries_y: tuple,  *args):
     size_x = 10
     size_y = 10
-    data_g = [[] for _ in range(size_x)]
-    data_h = [[] for _ in range(size_x)]
+    # data_g = [[] for _ in range(size_x)]
+    # data_h = [[] for _ in range(size_x)]
     data = [[] for _ in range(size_x)]
     coef_g = []
     coef_h = []
-    abscisse_x = []
-    abscisse_y = []
+    # abscisse_x = []
+    # abscisse_y = []
 
     if args:
         if len(args) == 2:
@@ -160,9 +161,10 @@ def generate_fuzzy_data_2D_functional(order:tuple, boundaries_x:tuple, boundarie
                 data_h[x][y] += coef_h[index] * pow(abscisse_y[y], order_h_list[index])
             data[x].append(data_g[x][y] * data_h[x][y])
 
-    span = (np.max(data) - np.min(data))
+    # span = (np.max(data) - np.min(data))
 
     return abscisse_x, abscisse_y, data
+
 
 def create_random_couples(list_of_elements:list):
     random.shuffle(list_of_elements)
@@ -177,7 +179,7 @@ def create_random_couples(list_of_elements:list):
 
 
 if __name__ == '__main__':
-    ab_x, ab_y, height = generate_fuzzy_data_2D_functional((2, 3), (-2, 2), (-2, 2), 0, (5, -3), (1, 2, 3))
+    ab_x, ab_y, height = generate_fuzzy_data_2d_functional((2, 3), (-2, 2), (-2, 2), (5, -3), (1, 2, 3))
     test = np.array(height)
     plt.imshow(height)
     plt.show()
