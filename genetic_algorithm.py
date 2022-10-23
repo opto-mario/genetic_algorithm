@@ -93,7 +93,7 @@ if __name__ == '__main__':
     polynomial_coefs = [-2.2, 6.4, 1.3, -0.5, 0.2]
     data_boundary_x = [-4, 5]
 
-    data_test_abs, data_test = addons.generate_fuzzy_data(polynomial_coefs, data_boundary_x, jitter=0)
+    data_test_abs, data_test = addons.generate_fuzzy_data(polynomial_coefs, data_boundary_x, jitter=10)
 
     gen.load_data(data_x=data_test_abs, data_y=data_test)
 
@@ -108,8 +108,7 @@ if __name__ == '__main__':
     mutation_timing = []
     average_fitness_result = []
 
-
-    # Loop for 1500 times. This needs to be adjusted until the result converges.
+    # Loop for N times. This needs to be adjusted until the result converges.
     for _ in track(range(3000), description="Iterating"):
         start = time.perf_counter()
         gen.get_fitness()
@@ -127,7 +126,7 @@ if __name__ == '__main__':
         offspring_timing.append(time.perf_counter()-start)
 
         start = time.perf_counter()
-        mutants = gen.mutation(offsprings, mutation_range=2, mutation_rate=0.7)
+        mutants = gen.mutation(offsprings, mutation_range=2, mutation_rate=0.1)
         mutation_timing.append(time.perf_counter()-start)
 
         gen.population = np.vstack([mates, mutants])
@@ -137,11 +136,19 @@ if __name__ == '__main__':
     print(f"average offspring step : {statistics.mean(offspring_timing)}")
     print(f"average mutation step : {statistics.mean(mutation_timing)}")
 
-    plt.plot(fitness_result, color='red')
-    plt.plot(average_fitness_result, color='blue')
+    fig, ax = plt.subplots()
+    ax.plot(fitness_result, "C0", label="Best solution")
+    ax.plot(average_fitness_result, "C1", label="Average of the solutions")
+    ax.legend()
+    ax.set_title("Fitness")
+    ax.set_xlabel("Iteration #")
     plt.show()
 
-    plt.scatter(gen.data_x, gen.data_y, marker="+")
+    fig2, ax = plt.subplots()
+    ax.scatter(gen.data_x, gen.data_y, color="C0", label="Original data used for the fitting", marker="+")
+
+    data_perfect_x, data_perfect_y = addons.generate_fuzzy_data(polynomial_coefs, data_boundary_x, jitter=0)
+    ax.plot(data_perfect_x, data_perfect_y, color="C2", label="Original data with no randomness")
 
     # find the best result in the population
     gen.get_fitness()
@@ -150,5 +157,9 @@ if __name__ == '__main__':
     fitting_data_x, fitting_data_y = addons.generate_fuzzy_data([winner[0], winner[1], winner[2], winner[3], winner[4]],
                                                                 data_boundary_x)
 
-    plt.plot(fitting_data_x, fitting_data_y, color="red")
+    ax.plot(fitting_data_x, fitting_data_y, "C1", label="Fitting result")
+    ax.legend()
+    ax.set_title("Fitting over the dataset")
+    ax.set_xlabel("X value")
+    ax.set_ylabel("Y value")
     plt.show()

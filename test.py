@@ -83,7 +83,7 @@ class PolynomialGeneticAlgorithm:
 if __name__ == '__main__':
     gen = PolynomialGeneticAlgorithm(5)
 
-    data_test_abs, data_test = addons.generate_fuzzy_data(5, -10, 3, 5, 5, 3, 0.5, -0.03, -0.3)
+    data_test_abs, data_test = addons.generate_fuzzy_data(5, -10, 3, 5)
 
     gen.load_data(data_x=data_test_abs, data_y=data_test)
     gen.create_population(20)
@@ -97,8 +97,7 @@ if __name__ == '__main__':
         gen.population = np.vstack([mates, test])
 
     plt.plot(gen.data_x, gen.data_y)
-    fitted_data_x, fitted_data_y = addons.generate_fuzzy_data(5, -10, 3, 0, offsprings[0][0], offsprings[0][1],
-                                                              offsprings[0][2], offsprings[0][3], offsprings[0][4])
+    fitted_data_x, fitted_data_y = addons.generate_fuzzy_data(5, -10, 3, 0)
 
     plt.plot(fitted_data_x, fitted_data_y, color="red")
     plt.show()

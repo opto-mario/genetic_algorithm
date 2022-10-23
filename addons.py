@@ -6,23 +6,32 @@ import matplotlib.pyplot as plt
 # takes in the order of the equation, and then the arguments, C0, C1, C2... Cn , such as the equation is
 # in the form : C0 + C1 X + C2 X^2 + .... + Cn X^n
 # write the jitter in percent
-def generate_fuzzy_data(coef_list: list, x_boundary: list, jitter=0, show_coeficients=False):
+def generate_fuzzy_data(coef_list: list, x_boundary: list, jitter=0, show_coefficients=False):
+    """
+    Function to generate data for the polynomial fitting with some randomness to it
+    :param coef_list: [b_0, b_1, b_2, ..., b_n] for a polynome like b_0 + b_1*x + b_2*x^2 + ... + b_n*x^n
+    :param x_boundary: [x_min, x_max] to generate data between x_min and x_max
+    :param jitter: this is a float, in percent, giving the amount of randomness to add to the polynomial data
+    :param show_coefficients: boolean to display the coefficients
+    :return: the list of x and the list of the corresponding polynomial values with the added randomness
+    """
+
     data = []
     abscisse = []
     order = len(coef_list)
     start = x_boundary[0]
     stop = x_boundary[1]
 
-    number_of_points = 100
+    number_of_points = 100  # Keeping this parameter fixed for the moment
 
-    if show_coeficients:
+    if show_coefficients:
         if coef_list:
-            print("Using coeficients:")
+            print("Using coefficients:")
             for coef in coef_list:
                 print(f"{coef}")
 
         else:
-            print("using random coeficients")
+            print("using random coefficients")
             coef_list = [random.uniform(-1, 1) for _i in range(order)]
 
     order_list = list(range(order))
